@@ -1,4 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nk_todo/views/error_page.dart';
+import 'package:nk_todo/views/loading_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -26,7 +29,30 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: InitializingWidget(),
+    );
+  }
+}
+
+class InitializingWidget extends StatelessWidget {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _initialization,
+      builder: (context, snapshot) {
+        // 初期化が異常終了したら、エラーページを表示する。
+        if (snapshot.hasError) {
+          return ErrorPage();
+        }
+        // 初期化が正常終了されたら、 MyHomePage() を表示する
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MyHomePage(title: 'NK TODO APP');
+        }
+        // 初期化中、ローディングページを表示する
+        return LoadingPage();
+      },
     );
   }
 }
